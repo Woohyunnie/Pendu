@@ -7,4 +7,4 @@ server:
 	gcc Server/server_thread.c -o server -pthread
 
 clean:
-	@rm -rf client server
+	@rm -rf ./client ./server
