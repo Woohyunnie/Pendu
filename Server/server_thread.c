@@ -22,7 +22,7 @@ void renvoi (int sock, char mot[], char reponse[], int vie)
 {
 
     char buffer[256];
-    char *rep= (char *)malloc(sizeof(char)*257);
+    char *rep;//= (char *)malloc(sizeof(char)*257);
     int longueur;
     int trouver=0;
     int i;
@@ -41,14 +41,14 @@ void renvoi (int sock, char mot[], char reponse[], int vie)
         return;
     }
     
-    for (i=0; i<sizeof(mot); i++)
+    for (i=0; i<strlen(mot); i++)
     {
         //si lettre existe dans le mot
-        if (buffer[0]=mot[i])
+        if (buffer[0] == mot[i])
         {
             trouver = 1;
             //une lettre deja demander
-            if(buffer[0]=reponse[i])
+            if(buffer[0]==reponse[i])
             {
                 printf("lettre deja trouver");
                 rep="lettre deja trouve";
@@ -65,10 +65,10 @@ void renvoi (int sock, char mot[], char reponse[], int vie)
     }
     
     strcpy(rep, " mot: ");
-    for(i=0;i<sizeof(reponse);i++)
+    for(i=0;i<strlen(reponse);i++)
         rep = rep + reponse[i];
 
-    if (trouver=0)
+    if (trouver==0)
     {
         vie--;
         printf("pas trouve le bon lettre");
@@ -94,7 +94,7 @@ void renvoi (int sock, char mot[], char reponse[], int vie)
 }
 
 /*------------------------------------------------------*/
-main(int argc, char **argv)
+int main (int argc, char **argv)
 {
     char mot[256];
     char reponse[256];
@@ -105,7 +105,7 @@ main(int argc, char **argv)
     
 
     //cree la reponse
-    for (i; i<siezof(mot); i++)
+    for (i=0; i<strlen(mot); i++)
     {
         reponse[i]='_';
     }
@@ -113,6 +113,6 @@ main(int argc, char **argv)
     //contacter avec un client
     
         //envoyer le mot trouver et la vie. ce ip_trouver = 0
-    
+    return 0;
 }
 
