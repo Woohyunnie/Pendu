@@ -111,7 +111,20 @@ int main (int argc, char **argv)
     srand((unsigned)time(NULL));
     strcpy(mot,listMot[rand()%2]);
     
+    /* creation de la socket */
+    if ((socket_descriptor = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+        perror("erreur : impossible de creer la socket de connexion avec le client.");
+        exit(1);
+    }
+    
+    /* association du socket socket_descriptor à la structure d'adresse adresse_locale */
+    if ((bind(socket_descriptor, (sockaddr*)(&adresse_locale), sizeof(adresse_locale))) < 0) {
+        perror("erreur : impossible de lier la socket a l'adresse de connexion.");
+        exit(1);
+    }
+    
     //envoyer le mot au client
+   
     
     //cree la reponse
     for (i=0; i<strlen(mot); i++)
