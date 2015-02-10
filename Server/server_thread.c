@@ -97,6 +97,18 @@ void renvoi (int sock, char mot[], char reponse[], int vie)
 /*------------------------------------------------------*/
 int main (int argc, char **argv)
 {
+    int 		socket_descriptor, 		/* descripteur de socket */
+    nouv_socket_descriptor, 	/* [nouveau] descripteur de socket */
+    longueur_adresse_courante; 	/* longueur d'adresse courante d'un client */
+    sockaddr_in 	adresse_locale, 		/* structure d'adresse locale*/
+    adresse_client_courant; 	/* adresse client courant */
+    hostent*		ptr_hote; 			/* les infos recuperees sur la machine hote */
+    servent*		ptr_service; 			/* les infos recuperees sur le service de la machine */
+    char 		machine[TAILLE_MAX_NOM+1]; 	/* nom de la machine locale */
+    
+    gethostname(machine,TAILLE_MAX_NOM);		/* recuperation du nom de la machine */
+    
+    
     static char *listMot[3];
     char mot[256];
     char reponse[256];
@@ -111,6 +123,12 @@ int main (int argc, char **argv)
     srand((unsigned)time(NULL));
     strcpy(mot,listMot[rand()%2]);
     
+    //cree la reponse
+    for (i=0; i<strlen(mot); i++)
+    {
+        reponse[i]='_';
+    }
+    
     /* creation de la socket */
     if ((socket_descriptor = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
         perror("erreur : impossible de creer la socket de connexion avec le client.");
@@ -123,14 +141,40 @@ int main (int argc, char **argv)
         exit(1);
     }
     
+    /* initialisation de la file d'ecoute */
+    listen(socket_descriptor,5);
+    
+    /* attente des connexions et traitement des donnees recues */
+    for(;;) {
+        
+        longueur_adresse_courante = sizeof(adresse_client_courant);
+        
+        /* adresse_client_courant sera renseigné par accept via les infos du connect */
+        if ((nouv_socket_descriptor =
+             accept(socket_descriptor,
+                    (sockaddr*)(&adresse_client_courant),
+                    &longueur_adresse_courante))
+            < 0) {
+            perror("erreur : impossible d'accepter la connexion avec le client.");
+            exit(1);
+        }
+        
+        pthread_t nouveauClient;
+        
+        if(pthread_create(&nouveauClient, NULL, traitement, (int*)&nouv_socket_descriptor)){
+            perror(">> Erreur lors de la creation du thread");
+            return(1);
+        }
+        
+    }
+    close(socket_descriptor);
+    
+    
+    
+    
     //envoyer le mot au client
    
-    
-    //cree la reponse
-    for (i=0; i<strlen(mot); i++)
-    {
-        reponse[i]='_';
-    }
+
     
     //contacter avec un client
     
