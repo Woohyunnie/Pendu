@@ -8,7 +8,8 @@ Serveur à lancer avant le client
 #include <netdb.h>          /* pour hostent, servent */
 #include <string.h> 		/* pour bcopy, ... */  
 #include <pthread.h>
-#include <unistd.h>
+#include <unistd.h>//pour mac
+#include <time.h>
 #define TAILLE_MAX_NOM 256
 #define TIME_SLEEP 15
 
@@ -96,14 +97,22 @@ void renvoi (int sock, char mot[], char reponse[], int vie)
 /*------------------------------------------------------*/
 int main (int argc, char **argv)
 {
+    static char *listMot[3];
     char mot[256];
     char reponse[256];
     int vie=5;
     int i;
     
     //cree le mot
+    listMot[0]="aabb";
+    listMot[1]="abba";
+    listMot[2]="abab";
     
-
+    srand((unsigned)time(NULL));
+    strcpy(mot,listMot[rand()%2]);
+    
+    //envoyer le mot au client
+    
     //cree la reponse
     for (i=0; i<strlen(mot); i++)
     {
@@ -113,6 +122,8 @@ int main (int argc, char **argv)
     //contacter avec un client
     
         //envoyer le mot trouver et la vie. ce ip_trouver = 0
+    
+    
     return 0;
 }
 
