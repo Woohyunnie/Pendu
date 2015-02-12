@@ -128,7 +128,7 @@ int main (int argc, char **argv)
     {
         reponse[i]='_';
     }
-    
+
     /* creation de la socket */
     if ((socket_descriptor = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
         perror("erreur : impossible de creer la socket de connexion avec le client.");
@@ -160,11 +160,11 @@ int main (int argc, char **argv)
         }
         
         pthread_t nouveauClient;
-        
+        /*
         if(pthread_create(&nouveauClient, NULL, traitement, (int*)&nouv_socket_descriptor)){
             perror(">> Erreur lors de la creation du thread");
             return(1);
-        }
+        }*/
         
     }
     close(socket_descriptor);
