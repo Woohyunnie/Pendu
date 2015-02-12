@@ -17,7 +17,7 @@ typedef struct servent 		servent;
 int main(int argc, char **argv) {
   
     int 	socket_descriptor, 	/* descripteur de socket */
-		longueur; 		/* longueur d'un buffer utilisé */
+			longueur; 		/* longueur d'un buffer utilisé */
     sockaddr_in adresse_locale; 	/* adresse de socket local */
     hostent *	ptr_host; 		/* info sur une machine hote */
     servent *	ptr_service; 		/* info sur service */
@@ -25,19 +25,20 @@ int main(int argc, char **argv) {
     char *	prog; 			/* nom du programme */
     char *	host; 			/* nom de la machine distante */
     char *	mesg; 			/* message envoyé */
-     
-    if (argc != 3) {
-	perror("usage : client <adresse-serveur> <message-a-transmettre>");
+    
+    
+    if (argc != 2) {
+	perror("usage : client <adresse-serveur>");
 	exit(1);
     }
    
     prog = argv[0];
     host = argv[1];
-    mesg = argv[2];
+    //mesg = argv[2];
     
-    printf("nom de l'executable : %s \n", prog);
-    printf("adresse du serveur  : %s \n", host);
-    printf("message envoye      : %s \n", mesg);
+    //printf("nom de l'executable : %s \n", prog);
+    //printf("adresse du serveur  : %s \n", host);
+    //printf("message envoye      : %s \n", mesg);
     
     if ((ptr_host = gethostbyname(host)) == NULL) {
 	perror("erreur : impossible de trouver le serveur a partir de son adresse.");
@@ -83,7 +84,9 @@ int main(int argc, char **argv) {
     
     printf("connexion etablie avec le serveur. \n");
     
-    printf("envoi d'un message au serveur. \n");
+    
+    
+    //printf("envoi d'un message au serveur. \n");
       
     /* envoi du message vers le serveur */
     if ((write(socket_descriptor, mesg, strlen(mesg))) < 0) {

@@ -32,7 +32,7 @@ void renvoi (int sock, char mot[], char reponse[], int vie)
     if ((longueur = read(sock, buffer, sizeof(buffer))) <= 0)
     	return;
    
-    //si client a envoyer plusieur lettre
+    //si client a envoyer plusieurs lettre
     if (longueur > 1)
     {
         printf("client n'a pas envoyer trop de lettre");
@@ -78,7 +78,7 @@ void renvoi (int sock, char mot[], char reponse[], int vie)
     strcpy(rep," rest de vie: ");
     rep = rep + vie ;
     
-    printf("message apres traitement : %s \n", rep);
+    //printf("message apres traitement : %s \n", rep);
     
     printf("renvoi du message traite.\n");
  
@@ -94,17 +94,19 @@ void renvoi (int sock, char mot[], char reponse[], int vie)
     
 }
 
+
 /*------------------------------------------------------*/
 int main (int argc, char **argv)
 {
-    int 		socket_descriptor, 		/* descripteur de socket */
-    nouv_socket_descriptor, 	/* [nouveau] descripteur de socket */
-    longueur_adresse_courante; 	/* longueur d'adresse courante d'un client */
-    sockaddr_in 	adresse_locale, 		/* structure d'adresse locale*/
-    adresse_client_courant; 	/* adresse client courant */
-    hostent*		ptr_hote; 			/* les infos recuperees sur la machine hote */
-    servent*		ptr_service; 			/* les infos recuperees sur le service de la machine */
-    char 		machine[TAILLE_MAX_NOM+1]; 	/* nom de la machine locale */
+    int socket_descriptor, 		/* descripteur de socket */
+    	nouv_socket_descriptor, 	/* [nouveau] descripteur de socket */
+    	longueur_adresse_courante; 	/* longueur d'adresse courante d'un client */
+    	sockaddr_in 
+    	adresse_locale, 		/* structure d'adresse locale*/
+    	adresse_client_courant; 	/* adresse client courant */
+    hostent* ptr_hote; 			/* les infos recuperees sur la machine hote */
+    servent* ptr_service; 			/* les infos recuperees sur le service de la machine */
+    char machine[TAILLE_MAX_NOM+1]; 	/* nom de la machine locale */
     
     gethostname(machine,TAILLE_MAX_NOM);		/* recuperation du nom de la machine */
     
@@ -128,6 +130,21 @@ int main (int argc, char **argv)
     {
         reponse[i]='_';
     }
+
+	/* recuperation de la structure d'adresse en utilisant le nom */
+    if ((ptr_hote = gethostbyname(machine)) == NULL) {
+		perror("erreur : impossible de trouver le serveur a partir de son nom.");
+		exit(1);
+    }
+
+	/* copie de ptr_hote vers adresse_locale */
+    bcopy((char*)ptr_hote->h_addr, (char*)&adresse_locale.sin_addr, ptr_hote->h_length);
+    adresse_locale.sin_family		= ptr_hote->h_addrtype; 
+    adresse_locale.sin_addr.s_addr	= INADDR_ANY; 
+    
+     /* utilisation d'un nouveau numero de port */
+    adresse_locale.sin_port = htons(5000);
+
 
     /* creation de la socket */
     if ((socket_descriptor = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
