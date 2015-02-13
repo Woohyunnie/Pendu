@@ -51,7 +51,6 @@ void* renvoi (void* d)
         return;
     }
     
-    printf("test \n");
     int i;
     for (i=0; i<strlen(dd->mot); i++)
     {
