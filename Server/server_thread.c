@@ -38,7 +38,7 @@ void* renvoi (void* d)
    
     //lecture de l'envoi du client
     if ((longueur = read(dd->socket, buffer, sizeof(buffer))) <= 0)
-    	return;
+    	return NULL;
    
    printf("message lu : %s \n", buffer);
    
@@ -48,7 +48,7 @@ void* renvoi (void* d)
         printf("le client a envoyé trop de lettre \n");
         rep = "vous avez fourni trop de lettres";
         write(dd->socket,rep,strlen(rep));
-        return;
+        return NULL;
     }
     
     int i;
@@ -63,30 +63,30 @@ void* renvoi (void* d)
             if(buffer[0] == dd->reponse[i])
             {
                 printf("lettre déjà trouvée\n");
-                rep="lettre déjà trouvée";
+                rep = "lettre déjà trouvée";
             }
             //trouvé pour la 1ere fois
             else
             {
-                printf("Lettre %d trouvé", i);
+                printf("Lettre %d trouvé \n", i);
                 dd->reponse[i] = buffer[0];
                 //prendre son ip et compter
             }
         }
     }
-    /*
-    rep = " mot: ";
-    for(i=0;i<strlen(reponse);i++)
-        rep = rep + reponse[i];
-
+    
+    rep = "> mot: ";
+    for(i=0; i<strlen(dd->reponse); i++)
+        rep = rep + dd->reponse[i];
+	
     if (trouver==0)
     {
-        vie--;
-        printf("pas trouve le bon lettre");
+        dd->vie--;
+        printf("pas trouvé la bonne lettre \n");
     }
     
-    rep="reste de vie: " + vie;
-    
+    rep = rep + "reste de vie: " + dd->vie;
+    /*
     //printf("message apres traitement : %s \n", rep);
     
     printf("renvoi du message traite.\n");*/
@@ -99,7 +99,7 @@ void* renvoi (void* d)
     
     //printf("message envoye. \n");
     
-    return;
+    return NULL;
     
 }
 
