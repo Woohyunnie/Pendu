@@ -51,9 +51,11 @@ void* renvoi (void* d)
         return;
     }
     
+    printf("test \n");
     int i;
     for (i=0; i<strlen(dd->mot); i++)
     {
+        printf("%d \n", i);
         //si la lettre existe dans le mot
         if (buffer[0] == dd->mot[i])
         {
@@ -61,7 +63,7 @@ void* renvoi (void* d)
             //la lettre a déjà été trouvé
             if(buffer[0] == dd->reponse[i])
             {
-                printf("lettre déjà trouvée");
+                printf("lettre déjà trouvée\n");
                 rep="lettre déjà trouvée";
             }
             //trouvé pour la 1ere fois
