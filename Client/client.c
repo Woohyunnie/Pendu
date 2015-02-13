@@ -27,9 +27,9 @@ int main(int argc, char **argv) {
     char *	mesg; 			/* message envoyé */
     
     
-    if (argc != 2) {
-	perror("usage : client <adresse-serveur>");
-	exit(1);
+    if (argc != 3) {
+		perror("usage : client <adresse-serveur> <numero-port>");
+		exit(1);
     }
    
     prog = argv[0];
@@ -41,8 +41,8 @@ int main(int argc, char **argv) {
     //printf("message envoye      : %s \n", mesg);
     
     if ((ptr_host = gethostbyname(host)) == NULL) {
-	perror("erreur : impossible de trouver le serveur a partir de son adresse.");
-	exit(1);
+		perror("erreur : impossible de trouver le serveur a partir de son adresse.");
+		exit(1);
     }
     
     /* copie caractere par caractere des infos de ptr_host vers adresse_locale */
@@ -65,7 +65,7 @@ int main(int argc, char **argv) {
     
     /*-----------------------------------------------------------*/
     /* SOLUTION 2 : utiliser un nouveau numero de port */
-    adresse_locale.sin_port = htons(5000);
+    adresse_locale.sin_port = htons(atoi(argv[2]));//htons(5000);
     /*-----------------------------------------------------------*/
     
     printf("numero de port pour la connexion au serveur : %d \n", ntohs(adresse_locale.sin_port));
@@ -85,6 +85,11 @@ int main(int argc, char **argv) {
     printf("connexion etablie avec le serveur. \n");
     
     
+    while (strlen(mesg) != 1) 
+    {
+    	printf("lettre? \n");
+    	scanf("%s", mesg);
+    }
     
     //printf("envoi d'un message au serveur. \n");
       
@@ -93,9 +98,6 @@ int main(int argc, char **argv) {
 	perror("erreur : impossible d'ecrire le message destine au serveur.");
 	exit(1);
     }
-    
-    /* mise en attente du prgramme pour simuler un delai de transmission */
-    sleep(3);
      
     printf("message envoye au serveur. \n");
                 

@@ -18,54 +18,63 @@ typedef struct sockaddr_in sockaddr_in;
 typedef struct hostent hostent;
 typedef struct servent servent;
 
-/*------------------------------------------------------*/
-void renvoi (int sock, char mot[], char reponse[], int vie)
-{
+typedef struct _data data;
+struct _data{
+	int socket;
+	char mot[256];
+	char reponse[256];
+    int vie;
+};
 
-    char buffer[256];
+/*------------------------------------------------------*/
+void* renvoi (void* d)
+{
+    char buffer[256] = "";
+    struct _data* dd = (struct _data*)d;
     char *rep;//= (char *)malloc(sizeof(char)*257);
     int longueur;
     int trouver=0;
-    int i;
+
    
-    //si client n'a rien envoyer
-    if ((longueur = read(sock, buffer, sizeof(buffer))) <= 0)
+    //lecture de l'envoi du client
+    if ((longueur = read(dd->socket, buffer, sizeof(buffer))) <= 0)
     	return;
    
-    //si client a envoyer plusieurs lettre
+   printf("message lu : %s \n", buffer);
+   
+    //si client envoit plusieurs lettres
     if (longueur > 1)
     {
-        printf("client n'a pas envoyer trop de lettre");
-        //rep="lettre deja trouve";
-        strcpy(rep,"lettre deja trouve");
-        write(sock,rep,strlen(rep)+1);
+        printf("le client a envoyé trop de lettre \n");
+        rep = "vous avez fourni trop de lettres";
+        write(dd->socket,rep,strlen(rep));
         return;
     }
     
-    for (i=0; i<strlen(mot); i++)
+    int i;
+    for (i=0; i<strlen(dd->mot); i++)
     {
-        //si lettre existe dans le mot
-        if (buffer[0] == mot[i])
+        //si la lettre existe dans le mot
+        if (buffer[0] == dd->mot[i])
         {
             trouver = 1;
-            //une lettre deja demander
-            if(buffer[0]==reponse[i])
+            //la lettre a déjà été trouvé
+            if(buffer[0] == dd->reponse[i])
             {
-                printf("lettre deja trouver");
-                rep="lettre deja trouve";
+                printf("lettre déjà trouvée");
+                rep="lettre déjà trouvée";
             }
-            //trouver en 1ere fois
+            //trouvé pour la 1ere fois
             else
             {
-                printf("trouve la lettre en 1ere");
-                reponse[i]=buffer[0];
+                printf("Lettre %d trouvé", i);
+                dd->reponse[i] = buffer[0];
                 //prendre son ip et compter
-                //...
             }
         }
     }
-    
-    strcpy(rep, " mot: ");
+    /*
+    rep = " mot: ";
     for(i=0;i<strlen(reponse);i++)
         rep = rep + reponse[i];
 
@@ -75,20 +84,19 @@ void renvoi (int sock, char mot[], char reponse[], int vie)
         printf("pas trouve le bon lettre");
     }
     
-    strcpy(rep," rest de vie: ");
-    rep = rep + vie ;
+    rep="reste de vie: " + vie;
     
     //printf("message apres traitement : %s \n", rep);
     
-    printf("renvoi du message traite.\n");
+    printf("renvoi du message traite.\n");*/
  
     /* mise en attente du prgramme pour simuler un delai de transmission */
-    sleep(TIME_SLEEP);
+    //sleep(TIME_SLEEP);
     
     //envoyer a client
-    write(sock,rep,strlen(rep)+1);
+    //write(sock,rep,strlen(rep)+1);
     
-    printf("message envoye. \n");
+    //printf("message envoye. \n");
     
     return;
     
@@ -112,24 +120,31 @@ int main (int argc, char **argv)
     
     
     static char *listMot[3];
-    char mot[256];
-    char reponse[256];
-    int vie=5;
-    int i;
+
     
-    //cree le mot
+    //cree mot
     listMot[0]="aabb";
     listMot[1]="abba";
     listMot[2]="abab";
     
     srand((unsigned)time(NULL));
-    strcpy(mot,listMot[rand()%2]);
+    struct _data threadData;
+    strcpy(threadData.mot,listMot[rand()%2]);
+    threadData.vie = 5;
+    
     
     //cree la reponse
-    for (i=0; i<strlen(mot); i++)
+    int i;
+    for (i=0; i<strlen(threadData.mot); i++)
     {
-        reponse[i]='_';
+        threadData.reponse[i]='_';
     }
+
+	/* Test du nombre d'argument */
+	if (argc != 2) {
+    	perror("usage : client <numero-port>");
+		exit(1);
+	}
 
 	/* recuperation de la structure d'adresse en utilisant le nom */
     if ((ptr_hote = gethostbyname(machine)) == NULL) {
@@ -142,8 +157,8 @@ int main (int argc, char **argv)
     adresse_locale.sin_family		= ptr_hote->h_addrtype; 
     adresse_locale.sin_addr.s_addr	= INADDR_ANY; 
     
-     /* utilisation d'un nouveau numero de port */
-    adresse_locale.sin_port = htons(5000);
+    /* utilisation d'un nouveau numero de port */
+    adresse_locale.sin_port = htons(atoi(argv[1]));//htons(5000);
 
 
     /* creation de la socket */
@@ -176,14 +191,15 @@ int main (int argc, char **argv)
             exit(1);
         }
         
-        pthread_t nouveauClient;
-        /*
-        if(pthread_create(&nouveauClient, NULL, traitement, (int*)&nouv_socket_descriptor)){
+        pthread_t nouveauThread;
+        threadData.socket=nouv_socket_descriptor;
+        if(pthread_create(&nouveauThread, NULL, renvoi, (void* )&threadData)){
             perror(">> Erreur lors de la creation du thread");
             return(1);
-        }*/
+        }
         
     }
+
     close(socket_descriptor);
     
     
