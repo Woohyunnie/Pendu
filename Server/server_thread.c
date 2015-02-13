@@ -85,17 +85,17 @@ void* renvoi (void* d)
         printf("pas trouvé la bonne lettre \n");
     }
     
-    rep = rep + "reste de vie: " + dd->vie;
-    /*
+    //rep = rep + "reste de vie: " + dd->vie;
+    
     //printf("message apres traitement : %s \n", rep);
     
-    printf("renvoi du message traite.\n");*/
+    printf("renvoi du message traite.\n");
  
     /* mise en attente du prgramme pour simuler un delai de transmission */
     //sleep(TIME_SLEEP);
     
     //envoyer a client
-    //write(sock,rep,strlen(rep)+1);
+    write(dd->socket,rep,strlen(rep)+1);
     
     //printf("message envoye. \n");
     
