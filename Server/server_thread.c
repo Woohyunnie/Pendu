@@ -33,72 +33,62 @@ void* renvoi (void* d)
     struct _data* dd = (struct _data*)d;
     char *rep;//= (char *)malloc(sizeof(char)*257);
     int longueur;
-    int trouver=0;
 
-   
-    //lecture de l'envoi du client
-    if ((longueur = read(dd->socket, buffer, sizeof(buffer))) <= 0)
-    	return NULL;
-   
-   printf("message lu : %s \n", buffer);
-   
-    //si client envoit plusieurs lettres
-    if (longueur > 1)
-    {
-        printf("le client a envoyé trop de lettre \n");
-        rep = "vous avez fourni trop de lettres";
-        write(dd->socket,rep,strlen(rep));
-        return NULL;
-    }
-    
     int i;
-    for (i=0; i<strlen(dd->mot); i++)
+    
+	/* Initilisation du jeu */
+	for (i=0; i<strlen(dd->mot); i++)
     {
-        printf("%d \n", i);
-        //si la lettre existe dans le mot
-        if (buffer[0] == dd->mot[i])
-        {
-            trouver = 1;
-            //la lettre a déjà été trouvé
-            if(buffer[0] == dd->reponse[i])
-            {
-                printf("lettre déjà trouvée\n");
-                rep = "lettre déjà trouvée";
-            }
-            //trouvé pour la 1ere fois
-            else
-            {
-                printf("Lettre %d trouvé \n", i);
-                dd->reponse[i] = buffer[0];
-                //prendre son ip et compter
-            }
-        }
+		dd->reponse[i] = '_';
+	}
+   	write(dd->socket,dd->reponse,strlen(dd->mot));
+   
+   while(1)
+   {
+		//lecture de l'envoi du client
+		if ((longueur = read(dd->socket, buffer, sizeof(buffer))) <= 0)
+			return NULL;
+	   
+	   printf("message lu : %s \n", buffer);
+	   
+		//si client envoit plusieurs lettres
+		if (longueur > 1)
+		{
+		    printf("le client a envoyé trop de lettre \n");
+		    rep = "vous avez fourni trop de lettres";
+		    write(dd->socket,rep,strlen(rep));
+		    return NULL;
+		}
+		
+		for (i=0; i<strlen(dd->mot); i++)
+		{
+			if (buffer[0] == dd->mot[i])
+			{
+				//nouvelle découverte de lettre
+				if (buffer[0] != dd->reponse[i])
+				{
+					printf("lettre trouvée\n");	
+				}
+				//lettre déjà trouvée
+				else
+				{
+					printf("lettre déjà trouvée\n");	
+				}
+				dd->reponse[i] = buffer[0];
+			}
+			else
+			{
+			//	dd->reponse[i] = '_';
+				dd->vie--;
+			}
+			//printf("%c\n",dd->reponse[i]);
+		}
+		
+		printf("renvoi du message traite.\n");
+		
+		//envoyer a client
+		write(dd->socket,dd->reponse,strlen(dd->mot));
     }
-    
-    rep = "> mot: ";
-    for(i=0; i<strlen(dd->reponse); i++)
-        rep = rep + dd->reponse[i];
-	
-    if (trouver==0)
-    {
-        dd->vie--;
-        printf("pas trouvé la bonne lettre \n");
-    }
-    
-    //rep = rep + "reste de vie: " + dd->vie;
-    
-    //printf("message apres traitement : %s \n", rep);
-    
-    printf("renvoi du message traite.\n");
- 
-    /* mise en attente du prgramme pour simuler un delai de transmission */
-    //sleep(TIME_SLEEP);
-    
-    //envoyer a client
-    write(dd->socket,rep,strlen(rep)+1);
-    
-    //printf("message envoye. \n");
-    
     return NULL;
     
 }
@@ -120,17 +110,19 @@ int main (int argc, char **argv)
     gethostname(machine,TAILLE_MAX_NOM);		/* recuperation du nom de la machine */
     
     
-    static char *listMot[3];
+    static char *listMot[4];
 
     
     //cree mot
     listMot[0]="aabb";
     listMot[1]="abba";
     listMot[2]="abab";
+    listMot[3]="trucmachinchose";
     
     srand((unsigned)time(NULL));
     struct _data threadData;
-    strcpy(threadData.mot,listMot[rand()%2]);
+    char* tmp = listMot[rand()%3];
+    strcpy(threadData.mot,tmp);
     threadData.vie = 5;
     
     

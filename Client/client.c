@@ -24,7 +24,7 @@ int main(int argc, char **argv) {
     char 	buffer[256];
     char *	prog; 			/* nom du programme */
     char *	host; 			/* nom de la machine distante */
-    char *	mesg; 			/* message envoyé */
+    char *	mesg;// = ""; 			/* message envoyé */
     
     
     if (argc != 3) {
@@ -34,11 +34,6 @@ int main(int argc, char **argv) {
    
     prog = argv[0];
     host = argv[1];
-    //mesg = argv[2];
-    
-    //printf("nom de l'executable : %s \n", prog);
-    //printf("adresse du serveur  : %s \n", host);
-    //printf("message envoye      : %s \n", mesg);
     
     if ((ptr_host = gethostbyname(host)) == NULL) {
 		perror("erreur : impossible de trouver le serveur a partir de son adresse.");
@@ -47,28 +42,9 @@ int main(int argc, char **argv) {
     
     /* copie caractere par caractere des infos de ptr_host vers adresse_locale */
     bcopy((char*)ptr_host->h_addr, (char*)&adresse_locale.sin_addr, ptr_host->h_length);
-    adresse_locale.sin_family = AF_INET; /* ou ptr_host->h_addrtype; */
-    
-    /* 2 facons de definir le service que l'on va utiliser a distance */
-    /* (commenter l'une ou l'autre des solutions) */
-    
-    /*-----------------------------------------------------------*/
-    /* SOLUTION 1 : utiliser un service existant, par ex. "irc" */
-    /*
-    if ((ptr_service = getservbyname("irc","tcp")) == NULL) {
-	perror("erreur : impossible de recuperer le numero de port du service desire.");
-	exit(1);
-    }
-    adresse_locale.sin_port = htons(ptr_service->s_port);
-    */
-    /*-----------------------------------------------------------*/
-    
-    /*-----------------------------------------------------------*/
-    /* SOLUTION 2 : utiliser un nouveau numero de port */
+    adresse_locale.sin_family = AF_INET;
+
     adresse_locale.sin_port = htons(atoi(argv[2]));//htons(5000);
-    /*-----------------------------------------------------------*/
-    
-    printf("numero de port pour la connexion au serveur : %d \n", ntohs(adresse_locale.sin_port));
     
     /* creation de la socket */
     if ((socket_descriptor = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
@@ -84,30 +60,37 @@ int main(int argc, char **argv) {
     
     printf("connexion etablie avec le serveur. \n");
     
+    if (longueur = read(socket_descriptor, buffer, sizeof(buffer)) > 0) {
+		printf("Jeu en cours: \n");
+		write(1, buffer, longueur);
+	}
+    	
     
-    while (strlen(mesg) != 1) 
+    while (1)
     {
-    	printf("lettre? \n");
-    	scanf("%s", mesg);
+    	
+		while (strlen(mesg) != 1) 
+		{
+			printf("\nlettre? \n");
+			scanf("%s", mesg);
+		}
+		  
+		/* envoi du message vers le serveur */
+		if ((write(socket_descriptor, mesg, strlen(mesg))) < 0) {
+			perror("erreur : impossible d'ecrire le message destine au serveur.");
+			exit(1);
+		}
+		 
+		printf("lettre envoye au serveur. \n");
+		            
+		/* lecture de la reponse en provenance du serveur */
+		if((longueur = read(socket_descriptor, buffer, sizeof(buffer))) > 0) {
+			printf("reponse : \n");
+			write(1,buffer,longueur);
+		}
+		
+		strcpy(mesg,"");
     }
-    
-    //printf("envoi d'un message au serveur. \n");
-      
-    /* envoi du message vers le serveur */
-    if ((write(socket_descriptor, mesg, strlen(mesg))) < 0) {
-	perror("erreur : impossible d'ecrire le message destine au serveur.");
-	exit(1);
-    }
-     
-    printf("message envoye au serveur. \n");
-                
-    /* lecture de la reponse en provenance du serveur */
-    while((longueur = read(socket_descriptor, buffer, sizeof(buffer))) > 0) {
-	printf("reponse du serveur : \n");
-	write(1,buffer,longueur);
-    }
-    
-    printf("\nfin de la reception.\n");
     
     close(socket_descriptor);
     
