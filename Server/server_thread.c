@@ -26,6 +26,10 @@ struct _data{
     int vie;
 };
 
+typedef int boolean;
+#define true 1
+#define false 0
+
 /*------------------------------------------------------*/
 void* renvoi (void* d)
 {
@@ -33,33 +37,59 @@ void* renvoi (void* d)
     struct _data* dd = (struct _data*)d;
     char *rep;//= (char *)malloc(sizeof(char)*257);
     int longueur;
+	boolean fin;
 
     int i;
     
 	/* Initilisation du jeu */
+	printf("init >%s<(%d)\n",dd->mot,(int)strlen(dd->mot));
 	for (i=0; i<strlen(dd->mot); i++)
     {
 		dd->reponse[i] = '_';
 	}
+	dd->reponse[i] = '\0';
    	write(dd->socket,dd->reponse,strlen(dd->mot));
    
+   	read(dd->socket, rep, 3);
    while(1)
    {
+		//test si mot fini
+		fin = true;
+		for(i=0; i<strlen(dd->mot); i++)
+		{
+			if(dd->reponse[i] != dd->mot[i])
+			{
+				fin = false;
+				break;
+			}	
+		}
+		if (fin)
+		{
+			rep = "Mot trouvé : fin de partie";
+		}
+		else
+		{
+			rep = "\n";
+			//write(dd->socket, rep, strlen(rep));
+		}
+		//write(dd->socket, "\n", 1);
+		write(dd->socket, rep, strlen(rep));
+
 		//lecture de l'envoi du client
 		if ((longueur = read(dd->socket, buffer, sizeof(buffer))) <= 0)
 			return NULL;
-	   
-	   printf("message lu : %s \n", buffer);
+	   buffer[longueur] = '\0';
+	   printf("message lu : >%s< \n", buffer);
 	   
 		//si client envoit plusieurs lettres
-		if (longueur > 1)
+		/*if (longueur > 1)
 		{
 		    printf("le client a envoyé trop de lettre \n");
 		    rep = "vous avez fourni trop de lettres";
 		    write(dd->socket,rep,strlen(rep));
 		    return NULL;
-		}
-		
+		}*/
+		printf("mot = >%s<(%d)<\n",dd->mot,(int)strlen(dd->mot));
 		for (i=0; i<strlen(dd->mot); i++)
 		{
 			if (buffer[0] == dd->mot[i])
@@ -68,13 +98,13 @@ void* renvoi (void* d)
 				if (buffer[0] != dd->reponse[i])
 				{
 					printf("lettre trouvée\n");	
+					dd->reponse[i] = buffer[0];
 				}
 				//lettre déjà trouvée
 				else
 				{
 					printf("lettre déjà trouvée\n");	
 				}
-				dd->reponse[i] = buffer[0];
 			}
 			else
 			{
@@ -83,11 +113,16 @@ void* renvoi (void* d)
 			}
 			//printf("%c\n",dd->reponse[i]);
 		}
-		
+		buffer[0] = '\0';
+		buffer[1] = '\0';
 		printf("renvoi du message traite.\n");
 		
 		//envoyer a client
 		write(dd->socket,dd->reponse,strlen(dd->mot));
+		read(dd->socket, rep, 3);
+		char vieT[20]="";
+		sprintf(vieT,"%d",dd->vie);
+		//write(dd->socket,vieT,sizeof(vieT));
     }
     return NULL;
     
@@ -111,17 +146,16 @@ int main (int argc, char **argv)
     
     
     static char *listMot[4];
-
-    
     //cree mot
-    listMot[0]="aabb";
-    listMot[1]="abba";
-    listMot[2]="abab";
+    listMot[0]="jesappellegroot";
+    listMot[1]="orchidee";
+    listMot[2]="anticonstitutionnellement";
     listMot[3]="trucmachinchose";
     
     srand((unsigned)time(NULL));
     struct _data threadData;
-    char* tmp = listMot[rand()%3];
+    char* tmp = listMot[rand()%4];
+    printf("mot >%s<",tmp);
     strcpy(threadData.mot,tmp);
     threadData.vie = 5;
     

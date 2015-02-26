@@ -26,6 +26,11 @@ int main(int argc, char **argv) {
     char *	host; 			/* nom de la machine distante */
     char *	mesg;// = ""; 			/* message envoyé */
     
+    int i;
+    for (i = 0; i<256; i++)
+    	buffer[i]='\0';  
+    
+    
     
     if (argc != 3) {
 		perror("usage : client <adresse-serveur> <numero-port>");
@@ -59,15 +64,20 @@ int main(int argc, char **argv) {
     }
     
     printf("connexion etablie avec le serveur. \n");
-    
+
     if (longueur = read(socket_descriptor, buffer, sizeof(buffer)) > 0) {
 		printf("Jeu en cours: \n");
-		write(1, buffer, longueur);
+		printf("%s\n",buffer);
 	}
-    	
-    
+	
+    write(socket_descriptor, "OK\n", 3);
+    strcpy(mesg,"");
     while (1)
     {
+    	if((longueur = read(socket_descriptor, buffer, sizeof(buffer))) > 0) {
+			buffer[longueur] = '\0';
+			printf("%s\n",buffer);
+		}
     	
 		while (strlen(mesg) != 1) 
 		{
@@ -77,7 +87,7 @@ int main(int argc, char **argv) {
 		  
 		/* envoi du message vers le serveur */
 		if ((write(socket_descriptor, mesg, strlen(mesg))) < 0) {
-			perror("erreur : impossible d'ecrire le message destine au serveur.");
+			perror("erreur : impossible d'envoyer la lettre.");
 			exit(1);
 		}
 		 
@@ -86,8 +96,32 @@ int main(int argc, char **argv) {
 		/* lecture de la reponse en provenance du serveur */
 		if((longueur = read(socket_descriptor, buffer, sizeof(buffer))) > 0) {
 			printf("reponse : \n");
-			write(1,buffer,longueur);
+			buffer[longueur] = '\0';
+			printf("%s\n",buffer);
 		}
+		write(socket_descriptor, "OK\n", 3);
+		//printf("before print pendu (l=%d)\n",longueur);
+		/*if(read(socket_descriptor, buffer, sizeof(buffer)) > 0) {
+			printf("test\n");
+			int vie = atoi(buffer);
+			switch (vie)
+			{
+				case 5: printf("\n");
+						break;
+				case 4: printf(" | \n");
+						break;
+				case 3: printf(" | \n 0 \n");
+						break;
+				case 2: printf(" | \n 0 \n ^ \n");
+						break;
+				case 1:	printf(" | \n 0 \n ^ \n | \n");
+						break;
+				case 0: printf(" | \n 0 \n ^ \n | \n ^ \n Perdu! \n");
+						break;
+				default:printf("Erreur vie!\n");
+						break;
+			}
+		}*/
 		
 		strcpy(mesg,"");
     }
