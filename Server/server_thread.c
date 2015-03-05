@@ -50,9 +50,9 @@ void* renvoi (void* d)
 	dd->reponse[i] = '\0';
    	write(dd->socket,dd->reponse,strlen(dd->mot));
    
-   	read(dd->socket, rep, 3);
-   while(1)
-   {
+   	read(dd->socket, rep, 2);
+    while(1)
+    {
 		//test si mot fini
 		fin = true;
 		for(i=0; i<strlen(dd->mot); i++)
@@ -65,21 +65,21 @@ void* renvoi (void* d)
 		}
 		if (fin)
 		{
-			rep = "Mot trouvé : fin de partie";
+			rep = "Mot trouvé : fin de partie\n";
+			break;
 		}
 		else
 		{
 			rep = "\n";
 			//write(dd->socket, rep, strlen(rep));
 		}
-		//write(dd->socket, "\n", 1);
 		write(dd->socket, rep, strlen(rep));
 
 		//lecture de l'envoi du client
-		if ((longueur = read(dd->socket, buffer, sizeof(buffer))) <= 0)
-			return NULL;
+		while((longueur = read(dd->socket, buffer, sizeof(buffer))) != 1)
+			{}
 	   buffer[longueur] = '\0';
-	   printf("message lu : >%s< \n", buffer);
+	   printf("message lu : >%s< %d \n", buffer, longueur);
 	   
 		//si client envoit plusieurs lettres
 		/*if (longueur > 1)
@@ -117,11 +117,14 @@ void* renvoi (void* d)
 		buffer[1] = '\0';
 		printf("renvoi du message traite.\n");
 		
+		sleep(1);
+		
 		//envoyer a client
+		printf(">>>>%s\n",dd->reponse);
 		write(dd->socket,dd->reponse,strlen(dd->mot));
-		read(dd->socket, rep, 3);
-		char vieT[20]="";
-		sprintf(vieT,"%d",dd->vie);
+		read(dd->socket, rep, 2);
+		//char vieT[20]="";
+		//sprintf(vieT,"%d",dd->vie);
 		//write(dd->socket,vieT,sizeof(vieT));
     }
     return NULL;

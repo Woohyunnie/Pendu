@@ -70,7 +70,7 @@ int main(int argc, char **argv) {
 		printf("%s\n",buffer);
 	}
 	
-    write(socket_descriptor, "OK\n", 3);
+    write(socket_descriptor, "OK", 2);
     strcpy(mesg,"");
     while (1)
     {
@@ -81,7 +81,7 @@ int main(int argc, char **argv) {
     	
 		while (strlen(mesg) != 1) 
 		{
-			printf("\nlettre? \n");
+			printf("lettre? \n");
 			scanf("%s", mesg);
 		}
 		  
@@ -92,6 +92,11 @@ int main(int argc, char **argv) {
 		}
 		 
 		printf("lettre envoye au serveur. \n");
+		
+		sleep(1);
+		         
+		for (i = 0; i<256; i++)
+    		buffer[i]='\0'; 
 		            
 		/* lecture de la reponse en provenance du serveur */
 		if((longueur = read(socket_descriptor, buffer, sizeof(buffer))) > 0) {
@@ -99,7 +104,7 @@ int main(int argc, char **argv) {
 			buffer[longueur] = '\0';
 			printf("%s\n",buffer);
 		}
-		write(socket_descriptor, "OK\n", 3);
+		write(socket_descriptor, "OK", 2);
 		//printf("before print pendu (l=%d)\n",longueur);
 		/*if(read(socket_descriptor, buffer, sizeof(buffer)) > 0) {
 			printf("test\n");
