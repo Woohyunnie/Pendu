@@ -66,14 +66,15 @@ void* renvoi (void* d)
 		if (fin)
 		{
 			rep = "Mot trouvé : fin de partie\n";
-			break;
+			write(dd->socket, rep, strlen(rep));
+			return NULL;
 		}
 		else
 		{
 			rep = "\n";
-			//write(dd->socket, rep, strlen(rep));
+			write(dd->socket, rep, strlen(rep));
 		}
-		write(dd->socket, rep, strlen(rep));
+		
 
 		//lecture de l'envoi du client
 		while((longueur = read(dd->socket, buffer, sizeof(buffer))) != 1)

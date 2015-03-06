@@ -77,6 +77,8 @@ int main(int argc, char **argv) {
     	if((longueur = read(socket_descriptor, buffer, sizeof(buffer))) > 0) {
 			buffer[longueur] = '\0';
 			printf("%s\n",buffer);
+			if (longueur == 28) 
+				exit(0);
 		}
     	
 		while (strlen(mesg) != 1) 
