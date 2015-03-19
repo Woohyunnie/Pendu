@@ -107,30 +107,16 @@ int main(int argc, char **argv) {
 			printf("%s\n",buffer);
 		}
 		write(socket_descriptor, "OK", 2);
-		//printf("before print pendu (l=%d)\n",longueur);
-		/*if(read(socket_descriptor, buffer, sizeof(buffer)) > 0) {
-			printf("test\n");
-			int vie = atoi(buffer);
-			switch (vie)
-			{
-				case 5: printf("\n");
-						break;
-				case 4: printf(" | \n");
-						break;
-				case 3: printf(" | \n 0 \n");
-						break;
-				case 2: printf(" | \n 0 \n ^ \n");
-						break;
-				case 1:	printf(" | \n 0 \n ^ \n | \n");
-						break;
-				case 0: printf(" | \n 0 \n ^ \n | \n ^ \n Perdu! \n");
-						break;
-				default:printf("Erreur vie!\n");
-						break;
-			}
-		}*/
-		
+		//printf("before print pendu (l=%d)\n",longueur);		
 		strcpy(mesg,"");
+		
+		// Affichage vie restante
+		if((longueur = read(socket_descriptor, buffer, sizeof(buffer))) > 0) {
+			buffer[longueur] = '\0';
+			printf("%s\n",buffer);
+		}
+	
+		write(socket_descriptor, "OK", 2);
     }
     
     close(socket_descriptor);

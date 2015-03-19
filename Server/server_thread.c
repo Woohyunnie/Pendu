@@ -38,11 +38,14 @@ void* renvoi (void* d)
     char *rep;//= (char *)malloc(sizeof(char)*257);
     int longueur;
 	boolean fin;
+	boolean trouve;
 
     int i;
     
+    dd->vie = 5;
+    
 	/* Initilisation du jeu */
-	printf("init >%s<(%d)\n",dd->mot,(int)strlen(dd->mot));
+	//printf("init >%s<(%d)\n",dd->mot,(int)strlen(dd->mot));
 	for (i=0; i<strlen(dd->mot); i++)
     {
 		dd->reponse[i] = '_';
@@ -91,6 +94,7 @@ void* renvoi (void* d)
 		    return NULL;
 		}*/
 		printf("mot = >%s<(%d)<\n",dd->mot,(int)strlen(dd->mot));
+		trouve = false;
 		for (i=0; i<strlen(dd->mot); i++)
 		{
 			if (buffer[0] == dd->mot[i])
@@ -100,6 +104,7 @@ void* renvoi (void* d)
 				{
 					printf("lettre trouvée\n");	
 					dd->reponse[i] = buffer[0];
+					trouve = true;
 				}
 				//lettre déjà trouvée
 				else
@@ -107,13 +112,12 @@ void* renvoi (void* d)
 					printf("lettre déjà trouvée\n");	
 				}
 			}
-			else
-			{
-			//	dd->reponse[i] = '_';
-				dd->vie--;
-			}
 			//printf("%c\n",dd->reponse[i]);
 		}
+		
+		if (trouve == false)
+			dd->vie--;
+		
 		buffer[0] = '\0';
 		buffer[1] = '\0';
 		printf("renvoi du message traite.\n");
@@ -124,9 +128,32 @@ void* renvoi (void* d)
 		printf(">>>>%s\n",dd->reponse);
 		write(dd->socket,dd->reponse,strlen(dd->mot));
 		read(dd->socket, rep, 2);
-		//char vieT[20]="";
-		//sprintf(vieT,"%d",dd->vie);
-		//write(dd->socket,vieT,sizeof(vieT));
+		
+		printf(">>vie: %d \n", dd->vie);
+		
+		switch (dd->vie)
+		{
+			case 5: rep ="\n";
+					break;
+			case 4: rep = " | \n";
+					break;
+			case 3: rep = " | \n 0 \n";
+					break;
+			case 2: rep = " | \n 0 \n ^ \n";
+					break;
+			case 1:	rep = " | \n 0 \n ^ \n | \n";
+					break;
+			case 0: rep = " | \n 0 \n ^ \n | \n ^ \n Perdu! \n";
+					break;
+			default:rep = "Erreur vie!\n";
+					break;
+		}
+		
+		write(dd->socket,rep,strlen(rep));
+		read(dd->socket, rep, 2);
+		
+		if (dd->vie == 0)
+			return NULL;
     }
     return NULL;
     
@@ -149,16 +176,19 @@ int main (int argc, char **argv)
     gethostname(machine,TAILLE_MAX_NOM);		/* recuperation du nom de la machine */
     
     
-    static char *listMot[4];
+    static char *listMot[7];
     //cree mot
-    listMot[0]="jesappellegroot";
+    listMot[0]="ornithorynque";
     listMot[1]="orchidee";
     listMot[2]="anticonstitutionnellement";
-    listMot[3]="trucmachinchose";
+    listMot[3]="schiste";
+    listMot[4]="hydrophobe";
+    listMot[5]="kiwi";
+    listMot[6]="dithyrambique";
     
     srand((unsigned)time(NULL));
     struct _data threadData;
-    char* tmp = listMot[rand()%4];
+    char* tmp = listMot[rand()%7];
     printf("mot >%s<",tmp);
     strcpy(threadData.mot,tmp);
     threadData.vie = 5;
@@ -232,19 +262,7 @@ int main (int argc, char **argv)
     }
 
     close(socket_descriptor);
-    
-    
-    
-    
-    //envoyer le mot au client
-   
 
-    
-    //contacter avec un client
-    
-        //envoyer le mot trouver et la vie. ce ip_trouver = 0
-    
-    
     return 0;
 }
 
