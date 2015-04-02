@@ -33,130 +33,139 @@ typedef int boolean;
 /*------------------------------------------------------*/
 void* renvoi (void* d)
 {
-    char buffer[256] = "";
-    struct _data* dd = (struct _data*)d;
-    char *rep;//= (char *)malloc(sizeof(char)*257);
-    int longueur;
-	boolean fin;
-	boolean trouve;
-
-    int i;
-    
-    dd->vie = 5;
-    
-	/* Initilisation du jeu */
-	//printf("init >%s<(%d)\n",dd->mot,(int)strlen(dd->mot));
-	for (i=0; i<strlen(dd->mot); i++)
-    {
-		dd->reponse[i] = '_';
-	}
-	dd->reponse[i] = '\0';
-   	write(dd->socket,dd->reponse,strlen(dd->mot));
-   
-   	read(dd->socket, rep, 2);
-    while(1)
-    {
-		//test si mot fini
-		fin = true;
-		for(i=0; i<strlen(dd->mot); i++)
-		{
-			if(dd->reponse[i] != dd->mot[i])
-			{
-				fin = false;
-				break;
-			}	
-		}
-		if (fin)
-		{
-			rep = "Mot trouvé : fin de partie\n";
-			write(dd->socket, rep, strlen(rep));
-			return NULL;
-		}
-		else
-		{
-			rep = "\n";
-			write(dd->socket, rep, strlen(rep));
-		}
+	boolean jeu = true;
+	while (jeu) 
+	{
+		struct _data* dd = (struct _data*)d;
+		static char *listMot[7];
+		//creation du mot
+		listMot[0]="ornithorynque";
+		listMot[1]="orchidee";
+		listMot[2]="anticonstitutionnellement";
+		listMot[3]="schiste";
+		listMot[4]="hydrophobe";
+		listMot[5]="kiwi";
+		listMot[6]="dithyrambique";
 		
+		srand((unsigned)time(NULL));
+		char* tmp = listMot[rand()%7];
+		printf("mot >%s<",tmp);
+		strcpy(dd->mot,tmp);
+		dd->vie = 5;
+		
+		char buffer[256] = "";
+		char *rep;//= (char *)malloc(sizeof(char)*257);
+		int longueur;
+		boolean fin;
+		boolean trouve;
 
-		//lecture de l'envoi du client
-		while((longueur = read(dd->socket, buffer, sizeof(buffer))) != 1)
-			{}
-	   buffer[longueur] = '\0';
-	   printf("message lu : >%s< %d \n", buffer, longueur);
-	   
-		//si client envoit plusieurs lettres
-		/*if (longueur > 1)
-		{
-		    printf("le client a envoyé trop de lettre \n");
-		    rep = "vous avez fourni trop de lettres";
-		    write(dd->socket,rep,strlen(rep));
-		    return NULL;
-		}*/
-		printf("mot = >%s<(%d)<\n",dd->mot,(int)strlen(dd->mot));
-		trouve = false;
+		int i;
+		
+		/* Initilisation du jeu */
+		//printf("init >%s<(%d)\n",dd->mot,(int)strlen(dd->mot));
 		for (i=0; i<strlen(dd->mot); i++)
 		{
-			if (buffer[0] == dd->mot[i])
+			dd->reponse[i] = '_';
+		}
+		dd->reponse[i] = '\0';
+	   	write(dd->socket,dd->reponse,strlen(dd->mot));
+	   
+	   	read(dd->socket, rep, 2);
+		while(1)
+		{
+			//test si mot fini
+			fin = true;
+			for(i=0; i<strlen(dd->mot); i++)
 			{
-				//nouvelle découverte de lettre
-				if (buffer[0] != dd->reponse[i])
+				if(dd->reponse[i] != dd->mot[i])
 				{
-					printf("lettre trouvée\n");	
-					dd->reponse[i] = buffer[0];
-					trouve = true;
-				}
-				//lettre déjà trouvée
-				else
+					fin = false;
+					break;
+				}	
+			}
+			if (fin)
+			{
+				rep = "Mot trouvé : fin de partie\n";
+				write(dd->socket, rep, strlen(rep));
+				break;
+			}
+			else
+			{
+				rep = "\n";
+				write(dd->socket, rep, strlen(rep));
+			}
+		
+
+			//lecture de l'envoi du client
+			while((longueur = read(dd->socket, buffer, sizeof(buffer))) != 1)
+				{}
+		   buffer[longueur] = '\0';
+		   printf("message lu : >%s< %d \n", buffer, longueur);
+		   
+			printf("mot = >%s<(%d)<\n",dd->mot,(int)strlen(dd->mot));
+			trouve = false;
+			for (i=0; i<strlen(dd->mot); i++)
+			{
+				if (buffer[0] == dd->mot[i])
 				{
-					printf("lettre déjà trouvée\n");	
+					//nouvelle découverte de lettre
+					if (buffer[0] != dd->reponse[i])
+					{
+						printf("lettre trouvée\n");	
+						dd->reponse[i] = buffer[0];
+						trouve = true;
+					}
+					//lettre déjà trouvée
+					else
+					{
+						printf("lettre déjà trouvée\n");	
+					}
 				}
 			}
-			//printf("%c\n",dd->reponse[i]);
+		
+			if (trouve == false)
+				dd->vie--;
+		
+			buffer[0] = '\0';
+			buffer[1] = '\0';
+			printf("renvoi du message traite.\n");
+		
+			sleep(1);
+		
+			//envoyer a client
+			printf(">>>>%s\n",dd->reponse);
+			write(dd->socket,dd->reponse,strlen(dd->mot));
+			read(dd->socket, rep, 2);
+		
+			printf(">>vie: %d \n", dd->vie);
+		
+			switch (dd->vie)
+			{
+				case 5: rep ="\n";
+						break;
+				case 4: rep = " | \n";
+						break;
+				case 3: rep = " | \n 0 \n";
+						break;
+				case 2: rep = " | \n 0 \n ^ \n";
+						break;
+				case 1:	rep = " | \n 0 \n ^ \n | \n";
+						break;
+				case 0: rep = " | \n 0 \n ^ \n | \n ^ \n Perdu! \n";
+						break;
+				default:rep = "Erreur vie!\n";
+						break;
+			}
+		
+			write(dd->socket,rep,strlen(rep));
+			read(dd->socket, rep, 2);
+		
+			if (dd->vie == 0)
+				break;
 		}
 		
-		if (trouve == false)
-			dd->vie--;
-		
-		buffer[0] = '\0';
-		buffer[1] = '\0';
-		printf("renvoi du message traite.\n");
-		
-		sleep(1);
-		
-		//envoyer a client
-		printf(">>>>%s\n",dd->reponse);
-		write(dd->socket,dd->reponse,strlen(dd->mot));
-		read(dd->socket, rep, 2);
-		
-		printf(">>vie: %d \n", dd->vie);
-		
-		switch (dd->vie)
-		{
-			case 5: rep ="\n";
-					break;
-			case 4: rep = " | \n";
-					break;
-			case 3: rep = " | \n 0 \n";
-					break;
-			case 2: rep = " | \n 0 \n ^ \n";
-					break;
-			case 1:	rep = " | \n 0 \n ^ \n | \n";
-					break;
-			case 0: rep = " | \n 0 \n ^ \n | \n ^ \n Perdu! \n";
-					break;
-			default:rep = "Erreur vie!\n";
-					break;
-		}
-		
-		write(dd->socket,rep,strlen(rep));
-		read(dd->socket, rep, 2);
-		
-		if (dd->vie == 0)
-			return NULL;
-    }
-    return NULL;
-    
+	}
+	return NULL;
 }
 
 
@@ -175,31 +184,7 @@ int main (int argc, char **argv)
     
     gethostname(machine,TAILLE_MAX_NOM);		/* recuperation du nom de la machine */
     
-    
-    static char *listMot[7];
-    //cree mot
-    listMot[0]="ornithorynque";
-    listMot[1]="orchidee";
-    listMot[2]="anticonstitutionnellement";
-    listMot[3]="schiste";
-    listMot[4]="hydrophobe";
-    listMot[5]="kiwi";
-    listMot[6]="dithyrambique";
-    
-    srand((unsigned)time(NULL));
     struct _data threadData;
-    char* tmp = listMot[rand()%7];
-    printf("mot >%s<",tmp);
-    strcpy(threadData.mot,tmp);
-    threadData.vie = 5;
-    
-    
-    //cree la reponse
-    int i;
-    for (i=0; i<strlen(threadData.mot); i++)
-    {
-        threadData.reponse[i]='_';
-    }
 
 	/* Test du nombre d'argument */
 	if (argc != 2) {
